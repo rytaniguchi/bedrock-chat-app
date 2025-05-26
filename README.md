@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# bedrock-chat-app
-Bedrock Claudeを使ったPython CLIチャットアプリ（Mac対応、音声読み上げも可）
-=======
 # AWS Bedrock Chat App
 
 このアプリはAWS Bedrockとチャット形式でやり取りできるPython CLIツールです。
@@ -80,6 +76,3 @@ Bedrock Claudeを使ったPython CLIチャットアプリ（Mac対応、音声�
 - public/
 
 ---
-
-ご不明点やカスタマイズ要望があればご相談ください。
->>>>>>> d6c85c2 (READMEをPython CLIチャットアプリ専用に整理（フロントエンド説明削除）)
