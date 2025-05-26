@@ -165,5 +165,75 @@ def main():
         except Exception as e:
             print(f"[Error] {e}")
 
+import sys
+import speech_recognition as sr
+
+def recognize_from_microphone():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("マイク入力待機中...（話しかけてください）")
+        audio = recognizer.listen(source)
+    try:
+        text = recognizer.recognize_google(audio, language='ja-JP')
+        print(f"認識結果: {text}")
+        return text
+    except sr.UnknownValueError:
+        print("音声を認識できませんでした。もう一度話してください。")
+        return ""
+    except sr.RequestError as e:
+        print(f"音声認識サービスに接続できません: {e}")
+        return ""
+
+def main(io_mode="text"):
+    session_history = []
+    ai_init_prompt = "質問を始めてください。"
+    try:
+        ai_first_message = chat_with_bedrock(ai_init_prompt, session_history, system_prompt=SYSTEM_PROMPT)
+        if ai_first_message is None:
+            ai_first_message = ""
+        if io_mode == "audio" and os.uname().sysname == "Darwin":
+            subprocess.run(["say", ai_first_message])
+        else:
+            print(f"Bedrock: {ai_first_message}")
+        if ai_init_prompt and ai_first_message:
+            session_history.append((ai_init_prompt, ai_first_message))
+    except Exception as e:
+        print(f"[初回AIメッセージ取得エラー] {e}")
+        ai_first_message = "(AIからの初回メッセージ取得に失敗しました)"
+
+    while True:
+        if io_mode == "audio":
+            print("[音声入出力モード] 'exit' と話すと終了、'history' で履歴表示")
+            user_input = recognize_from_microphone()
+        else:
+            user_input = input("あなたの質問 > ")
+        if user_input is None:
+            continue
+        if user_input.lower() == "exit":
+            print("Goodbye!")
+            break
+        if user_input.lower() == "history":
+            print("\n--- 会話履歴 ---")
+            for i, (user_msg, ai_msg) in enumerate(session_history, 1):
+                print(f"{i}. [あなた] {user_msg}")
+                print(f"   [AI] {ai_msg}")
+            print("---\n")
+            continue
+        try:
+            answer = chat_with_bedrock(user_input, session_history, system_prompt=SYSTEM_PROMPT)
+            if io_mode == "audio" and os.uname().sysname == "Darwin":
+                subprocess.run(["say", answer])
+            else:
+                print(f"Bedrock: {answer}")
+            if user_input is not None and answer is not None:
+                session_history.append((user_input, answer))
+        except Exception as e:
+            print(f"[Error] {e}")
+
 if __name__ == "__main__":
-    main()
+    # コマンドライン引数で入出力モードを切り替え（例: python main.py text / python main.py audio）
+    io_mode = "text"
+    if len(sys.argv) > 1 and sys.argv[1] in ("audio", "mic", "microphone"):
+        io_mode = "audio"
+    main(io_mode)
+
