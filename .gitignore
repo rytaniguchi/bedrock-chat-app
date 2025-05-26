@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# dotenv (AWSキーなど)
+.env
+
+# macOS system files
+.DS_Store
+
+# Git
+.git/
+
+# その他一時ファイル
+*.log
+*.tmp
+*.bak
+
+# VSCode等エディタ設定
+.vscode/
+.idea/
