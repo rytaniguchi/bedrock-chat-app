@@ -68,6 +68,13 @@ SYSTEM_PROMPT = f"""
 
 【重要】3つの質問が終わったら、必ずまとめや提案を返し、同じ質問を繰り返さないこと。ユーザーがすべて答えた後は追加の質問は不要です。
 
+【脱線・雑談への対応指示】
+ユーザーがAWS Summitやブース体験と関係のない話題や雑談をした場合は、やんわりと話題をAWS Summitの体験やブース案内に戻してください。
+たとえば「楽しいお話ですね！ところで、AWS Summitの体験についてもぜひお聞かせください。」など、相手を否定せずに自然に本題へ誘導してください。
+
+【会話終了指示】
+ブース案内・まとめが完了したら、必ず最後に「【会話終了】」という文字列を一行で出力してください。
+
 1. あなたの職種や役割を教えてください
 2. 現在最も関心のあるテクノロジー分野はどれですか？
 3. 今日の展示で特に知りたいことは？
@@ -144,7 +151,7 @@ def main():
         ai_first_message = "(AIからの初回メッセージ取得に失敗しました)"
 
     while True:
-        user_input = input("あなたの質問 > ")
+        user_input = input("あなたの回答 > ")
         if user_input.lower() == "exit":
             print("Goodbye!")
             break
@@ -193,8 +200,8 @@ def main(io_mode="text"):
             ai_first_message = ""
         if io_mode == "audio" and os.uname().sysname == "Darwin":
             subprocess.run(["say", ai_first_message])
-        else:
-            print(f"Bedrock: {ai_first_message}")
+        # else:
+        #     print(f"Bedrock: {ai_first_message}")
         if ai_init_prompt and ai_first_message:
             session_history.append((ai_init_prompt, ai_first_message))
     except Exception as e:
@@ -223,10 +230,13 @@ def main(io_mode="text"):
             answer = chat_with_bedrock(user_input, session_history, system_prompt=SYSTEM_PROMPT)
             if io_mode == "audio" and os.uname().sysname == "Darwin":
                 subprocess.run(["say", answer])
-            else:
-                print(f"Bedrock: {answer}")
+            # else:
+            #     print(f"Bedrock: {answer}")
             if user_input is not None and answer is not None:
                 session_history.append((user_input, answer))
+            if answer and "【会話終了】" in answer:
+                print("Bedrock: 会話終了指示を受信したため終了します。")
+                break
         except Exception as e:
             print(f"[Error] {e}")
 
@@ -236,4 +246,3 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] in ("audio", "mic", "microphone"):
         io_mode = "audio"
     main(io_mode)
-
