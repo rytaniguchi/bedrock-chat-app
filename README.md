@@ -71,8 +71,5 @@
 
 - main.py (Python CLI/バックエンド)
 - requirements.txt
-- package.json, tsconfig.json, vite.config.ts
-- src/ (Reactフロントエンド)
-- public/
 
 ---
